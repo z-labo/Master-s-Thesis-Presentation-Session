@@ -331,7 +331,6 @@
         lab.textContent = 'Score (0–5)';
 
         const input = document.createElement('input');
-        input.dataset.key = k;
 
         input.type = 'number';
         input.min = '0';
@@ -340,6 +339,7 @@
         input.inputMode = 'numeric';
 
         const k = keyFor(item);
+        input.dataset.key = k;
         if (typeof scores[k] === 'number') input.value = String(scores[k]);
 
         input.addEventListener('input', () => {
