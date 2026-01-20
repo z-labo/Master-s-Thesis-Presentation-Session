@@ -154,6 +154,18 @@
   }
   .evaluator input[type=text]:focus { outline: 1px solid #000000; }
 
+  /* 0-5 범위 밖 입력(즉시) */
+  input[type=number].invalid {
+    border-color: #e00000 !important;
+    outline: 2px solid #e00000 !important;
+  }
+
+  /* 제출 시 미입력 항목(빈칸) 표시 */
+  input[type=number].missing {
+    border-color: #e00000 !important;
+    outline: 2px solid #e00000 !important;
+  }
+
   </style>
 </head>
 
@@ -319,6 +331,8 @@
         lab.textContent = 'Score (0–5)';
 
         const input = document.createElement('input');
+        input.dataset.key = k;
+
         input.type = 'number';
         input.min = '0';
         input.max = '5';
@@ -329,18 +343,37 @@
         if (typeof scores[k] === 'number') input.value = String(scores[k]);
 
         input.addEventListener('input', () => {
-          const v = clampInt0to5(input.value);
-          if (v === null) { 
-            input.style.borderColor = '#5b2b2b';  
-            return; 
-          }
-  
-  
-          input.style.borderColor = '';
-          scores[k] = v; 
-          saveScores(scores); 
+        const raw = input.value.trim();
+
+        // ✅ 사용자가 지워서 빈칸이 된 경우: 즉시 빨강 표시하지 않음
+        if (raw === '') {
+          input.classList.remove('invalid');
+          input.classList.remove('missing'); // 혹시 제출 때 찍힌 표시도 해제
+          // 저장은 하지 않음(미입력 상태)
+          delete scores[k];                  // 통계가 정확히 줄어들도록 (선택이지만 권장)
+          saveScores(scores);
           updateStats(scores);
-        });
+          return;
+        }
+
+        const v = clampInt0to5(raw);
+
+        // ✅ 0-5 범위 밖이면 즉시 빨강
+        if (v === null) {
+          input.classList.add('invalid');
+          input.classList.remove('missing');
+          return; // 저장/통계 업데이트 안 함
+        }
+
+        // ✅ 정상 입력이면 빨강 해제 + 저장
+        input.classList.remove('invalid');
+        input.classList.remove('missing');
+
+        scores[k] = v;
+        saveScores(scores);
+        updateStats(scores); 
+      });
+
 
 
         right.appendChild(lab);
@@ -421,11 +454,27 @@
     const scores = loadScores();
 
     const allItemsCount = Object.values(DATA.items_by_date).reduce((acc, arr) => acc + arr.length, 0);
-    const filled = Object.values(scores).filter(v => typeof v === 'number').length;
-      if (filled !== allItemsCount) { 
-        alert(`未入力があります（${filled}/${allItemsCount}）。すべて入力してから提出してください。`);
+    const filled = Object.values(scores).filter(v => typeof v === 'number').length; 
+    if (filled !== allItemsCount) {
+      // ✅ 먼저 이전 missing 표시를 싹 지움
+      document.querySelectorAll('input[type=number].missing').forEach(el => el.classList.remove('missing'));
+
+      // ✅ 현재 DATA 기준으로 미입력(빈칸)만 missing 표시
+      for (const date of DATA.dates) { 
+        for (const item of DATA.items_by_date[date]) {
+          const kk = keyFor(item);
+          const val = scores[kk]; 
+          if (typeof val !== 'number') {
+            const el = document.querySelector(`input[type=number][data-key="${CSS.escape(kk)}"]`); 
+            if (el) el.classList.add('missing');
+          }
+        }
+      }
+
+      alert(`未入力があります（${filled}/${allItemsCount}）。すべて入力してから提出してください。`); 
       return;
     }
+
 
     const entries = [];
     for (const date of DATA.dates) {
