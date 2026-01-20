@@ -428,8 +428,9 @@
       }
     }
 
-    const payload = {
-      evaluator,                   // 평가자 이름
+    const payload = { 
+      judgeId: evaluator,             // ← 서버가 요구하는 키로 맞춤
+      evaluator,                      // (선택) 서버가 evaluator도 쓰면 유지
       timestamp: new Date().toISOString(),
       results: entries
     };
