@@ -390,7 +390,7 @@
       if (evaluatorEl) evaluatorEl.value = evaluator; // 입력칸에 반영
     }
 
-    if (!evaluator) {
+    if (!evaluator || !String(evaluator).trim()) {
       alert('評価者氏名が未入力のため、提出できません。');
       return;
     }
