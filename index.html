@@ -329,7 +329,9 @@
       const root = document.getElementById('root');
       root.innerHTML = '';
 
-      normalizeScores(loadScores());
+      let scores = loadScores();
+      scores = normalizeScores(scores);
+      saveScores(scores); // (선택) 로컬스토리지도 정리된 값으로 갱신
 
       for (const date of DATA.dates) {
         const block = document.createElement('section');
@@ -551,7 +553,7 @@
       }
 
       const payload = {
-        evaluatorName: evaluatorName,
+        evaluatorName: evaluator,
         timestamp: new Date().toISOString(),
         results: entries
       };
