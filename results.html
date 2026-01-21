@@ -203,15 +203,19 @@
       function renderResults(data) {
         const all_presenters = Array.isArray(data.all_presenters) ? data.all_presenters : [];
         const lastUpdated = data.lastUpdated || "-";
-        const all_evaluators = data.all_evaluators || 0;
+        const totalEvaluators = data.totalEvaluators || 0;
 
         lastUpdatedSpan.textContent = "最終更新: " + lastUpdated;
         recordCountSpan.textContent = "(参加者数: " + all_presenters.length + 
                                      " / 審査委員数: " + all_evaluators + ")";
 
+        if (evaluatorCountSpan) {
+          evaluatorCountSpan.textContent = "(評価者数: " + totalEvaluators + ")";
+        }
+
         tableBody.innerHTML = "";
 
-        participants.forEach((p, idx) => {
+        all_presenters.forEach((p, idx) => {
           const tr = document.createElement('tr');
 
           const rankTd = document.createElement('td');
