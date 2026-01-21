@@ -172,7 +172,7 @@ def aggregate_votes(records):
     # 참가자별 집계
     all_presenters = {}
 
-    for (judge_id, pid), (ts, score, comment, pname) in latest.items():
+    for (evaluator_name, pid), (ts, score, comment, pname) in latest.items():
         if score is None:
             continue
         try:
