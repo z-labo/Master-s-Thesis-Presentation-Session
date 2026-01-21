@@ -12,7 +12,7 @@ import dropbox
 # Config
 # -----------------------------
 DROPBOX_TOKEN = os.environ.get("DROPBOX_TOKEN")  # Render의 Environment에 설정
-DROPBOX_BASE_FOLDER = os.environ.get("DROPBOX_BASE_FOLDER")  # 기본값
+DROPBOX_BASE_FOLDER = os.environ.get("DROPBOX_BASE_FOLDER", "")  # 기본값
 ALLOWED_ORIGINS = os.environ.get(
     "ALLOWED_ORIGINS",
     "https://z-labo.github.io"  # GitHub Pages 도메인
