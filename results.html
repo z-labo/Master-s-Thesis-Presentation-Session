@@ -121,7 +121,7 @@
       <div>
         <span id="last-updated">最終更新: -</span>
         <span id="record-count" style="margin-left:8px;">(発表者数: -)</span>
-        <span id="evaluator-count" style="margin-left:8px;">(評価者数: -)</span>
+        <span id="evaluator-count" style="margin-left:8px;">(審査委員数: -)</span>
       </div>
 
       <div>
@@ -165,12 +165,9 @@
 
       const lastUpdatedSpan = document.getElementById('last-updated');
       const recordCountSpan = document.getElementById('record-count');
-      const evaluatorCountSpan  = document.getElementById('evaluator-count');
       const statusDiv = document.getElementById('status');
       const tableBody = document.querySelector('#result-table tbody');
       const refreshBtn = document.getElementById('refresh-btn');
-
-      console.log("DOM refs:", { lastUpdatedSpan, recordCountSpan, evaluatorCountSpan, tableBody, refreshBtn, statusDiv });
 
       async function fetchResults() {
         if (!statusDiv || !refreshBtn) return; // 최소 방어
@@ -206,11 +203,7 @@
         const totalEvaluators = data.totalEvaluators || 0;
 
         lastUpdatedSpan.textContent = "最終更新: " + lastUpdated;
-        recordCountSpan.textContent = "(参加者数: " + all_presenters.length + " / 審査委員数: " + totalEvaluators + ")";
-
-        if (evaluatorCountSpan) {
-          evaluatorCountSpan.textContent = "(評価者数: " + totalEvaluators + ")";
-        }
+        recordCountSpan.textContent = "(発表者数: " + all_presenters.length + " / 審査委員数: " + totalEvaluators + ")";
 
         tableBody.innerHTML = "";
 
