@@ -199,8 +199,6 @@
     const lastUpdated = data.lastUpdated || "-";
 
     const judges = Array.isArray(data.judges) ? data.judges : [];
-    document.querySelector("#judgeCount").textContent = String(judges.length);
-
 
     lastUpdatedSpan.textContent = "最終更新: " + lastUpdated;
     recordCountSpan.textContent = "(発表者数: " + participants.length + ")";
@@ -234,6 +232,7 @@
       totalTd.textContent = p.totalScore.toFixed(3);
       tr.appendChild(totalTd);
 
+      /*
       const detailTd = document.createElement('td');
       const details = p.details || [];
       if (details.length === 0) {
@@ -250,6 +249,7 @@
       tr.appendChild(detailTd);
 
       tableBody.appendChild(tr);
+      */
     });
   }
 
