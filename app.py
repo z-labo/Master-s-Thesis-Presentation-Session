@@ -134,11 +134,7 @@ def load_all_votes_from_dropbox():
   return records
 
 def aggregate_votes(records):
-  """
-  records: load_all_votes_from_dropbox()가 반환한 JSON 객체 리스트
-  return: 집계 결과 딕셔너리
-  """
-  # (judgeId, participantId) → (timestamp(str), score, comment)
+  # (judgeId, participantId) -> (ts, score, comment, pname)
   latest = {}
 
   for rec in records:
@@ -148,18 +144,23 @@ def aggregate_votes(records):
 
     if not judge_id:
       continue
-
-    judge_id = str(judge_id).strip() 
-  
+    judge_id = str(judge_id).strip()
     if not judge_id:
       continue
 
-    # timestamp 비교는 ISO8601 문자열 기준으로도 시간 순서가 맞는다고 가정
     for entry in results:
       pid = entry.get("participantId")
       score = entry.get("score")
       comment = entry.get("comment") or ""
-      pname = entry.get("presenter")
+
+      # ✅ 참가자 이름 필드: 클라이언트가 어떤 키로 보내든 대응
+      pname = (
+        entry.get("participantName")
+        or entry.get("presenter")
+        or entry.get("presenterName")
+        or entry.get("name")
+        or ""
+      )
 
       if not pid:
         continue
@@ -167,21 +168,21 @@ def aggregate_votes(records):
       key = (judge_id, pid)
       prev = latest.get(key)
       if (prev is None) or (ts > prev[0]):
-        latest[key] = (ts, score, comment)
+        latest[key] = (ts, score, comment, pname)
 
   # 참가자별 집계
   participants = {}
   pid_to_name = {}
 
-  for (judge_id, pid), (ts, score, comment) in latest.items():
+  for (judge_id, pid), (ts, score, comment, pname) in latest.items():
     if score is None:
-      continue
+      continue 
     try:
       s = float(score)
     except Exception:
       continue
 
-    # 이름 누적(비어있지 않은 것만)
+    # ✅ 이름 누적
     if isinstance(pname, str):
       pname = pname.strip()
     else:
@@ -194,7 +195,7 @@ def aggregate_votes(records):
       "participantName": "",
       "totalScore": 0.0,
       "voteCount": 0,
-      "details": []  # 각 심사위원별 상세
+      "details": []
     })
     p["totalScore"] += s
     p["voteCount"] += 1
@@ -205,29 +206,22 @@ def aggregate_votes(records):
       "timestamp": ts
     })
 
-  # 평균 및 정렬
   result_list = []
   for pid, info in participants.items():
     cnt = info["voteCount"]
     avg = info["totalScore"] / cnt if cnt > 0 else 0.0
     info["avgScore"] = round(avg, 3)
-
-    info["participantName"] = pid_to_name.get(pid, "")  # 프론트에서 fallback 처리 권장
-
+    info["participantName"] = pid_to_name.get(pid, "")
     result_list.append(info)
 
-  # 평균 점수 내림차순, 동률이면 voteCount 많은 순
   result_list.sort(key=lambda x: (-x["avgScore"], -x["voteCount"], x["participantId"]))
-  presenter_list = []
-  for pid in sorted(participants.keys()):
-    presenter_list.append({
-      "participantId": pid,
-      "participantName": pid_to_name.get(pid, "")
-    })
 
-  # 심사위원별 집계 (추가)
+  presenter_list = [{"participantId": pid, "participantName": pid_to_name.get(pid, "")}
+                    for pid in sorted(participants.keys())]
+
+  # 심사위원별 집계
   judges = {}
-  for (judge_id, pid), (ts, score, comment) in latest.items():
+  for (judge_id, pid), (ts, score, comment, pname) in latest.items():
     if score is None:
       continue
     try:
@@ -239,7 +233,7 @@ def aggregate_votes(records):
       "judgeId": judge_id,
       "totalScore": 0.0,
       "voteCount": 0,
-      "details": []  # 각 참가자에 준 점수 상세
+      "details": []
     })
     j["totalScore"] += s
     j["voteCount"] += 1
@@ -257,17 +251,16 @@ def aggregate_votes(records):
     info["avgScore"] = round(avg, 3)
     judge_id_list.append(info)
 
-  # 정렬은 필요에 따라: judgeId 오름차순(문자열) 또는 투표수/평균 등
-  judge_id_list.sort(key=lambda x: (x["judgeId"]))
-
+  judge_id_list.sort(key=lambda x: x["judgeId"])
 
   return {
     "ok": True,
     "lastUpdated": datetime.now(timezone.utc).isoformat(),
     "participants": result_list,
-    "participantsName": presenter_list,
+    "participantName": presenter_list,  
     "judges": judge_id_list
   }
+
 
 @app.route("/api/results", methods=["GET"])
 def api_results():
