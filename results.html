@@ -206,8 +206,7 @@
         const totalEvaluators = data.totalEvaluators || 0;
 
         lastUpdatedSpan.textContent = "最終更新: " + lastUpdated;
-        recordCountSpan.textContent = "(参加者数: " + all_presenters.length + 
-                                     " / 審査委員数: " + all_evaluators + ")";
+        recordCountSpan.textContent = "(参加者数: " + all_presenters.length + " / 審査委員数: " + totalEvaluators + ")";
 
         if (evaluatorCountSpan) {
           evaluatorCountSpan.textContent = "(評価者数: " + totalEvaluators + ")";
