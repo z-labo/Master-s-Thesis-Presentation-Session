@@ -86,10 +86,13 @@
     .status.ok {
       color: #047857;
     }
+
+   /*
     .details {
       margin-top: 16px;
       font-size: 0.85rem;
     }
+    
     .details pre {
       white-space: pre-wrap;
       background: #f9fafb;
@@ -97,6 +100,9 @@
       padding: 8px;
       font-family: "JetBrains Mono", Menlo, Monaco, Consolas, "Courier New", monospace;
     }
+
+    */
+    
     @media (max-width: 640px) {
       th, td { font-size: 0.8rem; }
     }
@@ -132,20 +138,22 @@
         <th style="width: 15%;">平均点</th>
         <th style="width: 15%;">票数</th>
         <th style="width: 15%;">合計点</th>
-        <th>詳細</th>
+        <!-- <th>詳細</th> -->
       </tr>
     </thead>
     <tbody>
       <!-- JSで埋め込み -->
     </tbody>
   </table>
-
+  
+  <!--
   <div class="details">
     <div class="small">
       ※ 「詳細」列には、各参加者に対してどの審査委員が何点を付けたか（コメント含む）を簡易的に表示します。  
       より詳細な分析が必要な場合は、元の JSON ファイルをダウンロードしてスクリプト等で処理してください。
     </div>
   </div>
+  -->
 </div>
 
 <script>
