@@ -242,7 +242,7 @@
           totalTd.textContent = Number(p.totalScore ?? 0).toFixed(3);
           tr.appendChild(totalTd);
           
-          /*
+          
           const detailTd = document.createElement('td');
           const details = p.details || [];
           if (details.length === 0) {
@@ -256,8 +256,8 @@
             });
             detailTd.textContent = lines.join(" / ");
           }
-          tr.appendChild(detailTd);
-          */
+          /* tr.appendChild(detailTd); */
+          
          
           tableBody.appendChild(tr);
         });
@@ -271,52 +271,59 @@
       function buildDetailCsv(data) {
         const all_presenters = Array.isArray(data?.all_presenters) ? data.all_presenters : [];
 
-        // 1) evaluator(=judgeId) 전체 집합 수집
+        // 1) evaluator(문자열) 전체 집합 수집: details[].evaluator 사용
         const evalSet = new Set();
         for (const p of all_presenters) {
           const details = Array.isArray(p.details) ? p.details : [];
           for (const d of details) {
-            if (d && d.judgeId != null) evalSet.add(String(d.judgeId));
+            const ev = (d && d.evaluator != null) ? String(d.evaluator) : "";
+            if (ev) evalSet.add(ev);
           }
         }
-        const evaluators = Array.from(evalSet).sort(); // 정렬(원하면 제거 가능)
+        const evaluators = Array.from(evalSet).sort();
 
-        // 2) 헤더: presenterId, presenter + evaluators...
-        const header = ["presenterId", "presenter", ...evaluators];
-
-        // 3) 각 presenter row: evaluator별 score 채우기(없으면 빈칸)
+        // 2) 헤더: presenterId, presenterName + evaluators...
+        const header = ["presenterId", "presenterName", ...evaluators];
         const rows = [header];
 
+        // 3) 각 presenter row: evaluator별 score 채우기(없으면 빈칸)
         for (const p of all_presenters) {
-          const rowMap = new Map(); // judgeId -> score
+          const rowMap = new Map(); // evaluator(string) -> score
           const details = Array.isArray(p.details) ? p.details : [];
+
           for (const d of details) {
-            const jid = (d && d.judgeId != null) ? String(d.judgeId) : null;
-            if (!jid) continue;
-            // score가 숫자면 기록, 아니면 빈칸 유지
+            const ev = (d && d.evaluator != null) ? String(d.evaluator) : "";
+            if (!ev) continue;
+
             const sc = d.score;
-            if (typeof sc === "number" && Number.isFinite(sc)) rowMap.set(jid, sc);
+            if (typeof sc === "number" && Number.isFinite(sc)) rowMap.set(ev, sc);
+            // 숫자 아니면 기록하지 않음(빈칸 유지)
           }
+
+          const presenterName =
+            (p.presenterName != null) ? String(p.presenterName)
+            : (p.presenter != null) ? String(p.presenter)
+            : "";
 
           const row = [
             (p.presenterId != null) ? String(p.presenterId) : "",
-            (p.presenter != null) ? String(p.presenter) : ""
+            presenterName
           ];
 
           for (const e of evaluators) {
-            const v = rowMap.has(e) ? rowMap.get(e) : "";
-            row.push(v === "" ? "" : String(v));
+            row.push(rowMap.has(e) ? String(rowMap.get(e)) : "");
           }
 
           rows.push(row);
         }
 
-        // CSV 문자열 생성
         return rows.map(r => r.map(csvEscape).join(",")).join("\r\n");
       }
 
+
       function downloadTextAsFile(text, filename, mime = "text/csv;charset=utf-8") {
         const blob = new Blob([text], { type: mime }); // :contentReference[oaicite:1]{index=1}
+        const bom = "\uFEFF";
         const url = URL.createObjectURL(blob);         // :contentReference[oaicite:2]{index=2}
         const a = document.createElement("a");
         a.href = url;
