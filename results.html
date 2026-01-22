@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>オンライン審査 集計結果</title>
+  <title>集計結果 教員用</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <style>
@@ -374,7 +374,7 @@
 
             const csv = buildDetailCsvFromRawVotes(rawVotes);
             const ts = new Date().toISOString().replace(/[:.]/g, "-");
-            downloadTextAsFile(csv, `detail_results_${ts}.csv`);
+            downloadTextAsFile(csv, `faculty_results_${ts}.csv`);
 
             statusDiv.textContent = "CSVを生成しました。";
             statusDiv.className = "status ok";
